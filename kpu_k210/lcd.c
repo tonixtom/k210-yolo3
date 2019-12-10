@@ -14,6 +14,7 @@
  */
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include "lcd.h"
 #include "nt35310.h"
 #include "font.h"
@@ -191,11 +192,20 @@ void lcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint
     uint32_t *p = data_buf;
     uint32_t data = color;
     uint32_t index = 0;
+	if(tom_abs(chang1,x1)>=45||tom_abs(chang2,x2)>=45||tom_abs(kuan1,y1)>=45||tom_abs(kuan2,y2)>=45)
+		P_NUM++;
+	chang1=x1;chang2=x2;kuan1=y1;kuan2=y2;
+	num_String(P_NUM, &C_NUM);
+
+
 
     data = (data << 16) | data;
     for (index = 0; index < 160 * width; index++)
-        *p++ = data;
-
+    {  
+		*p++ = data;
+	}	
+	lcd_draw_string(115, 2, &C_NUM, GREEN);
+	lcd_draw_string(5, 2, "num_detectde:", BLUE);
     lcd_set_area(x1, y1, x2, y1 + width - 1);
     tft_write_word(data_buf, ((x2 - x1 + 1) * width + 1) / 2, 0);
     lcd_set_area(x1, y2 - width + 1, x2, y2);
@@ -206,9 +216,47 @@ void lcd_draw_rectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint
     tft_write_word(data_buf, ((y2 - y1 + 1) * width + 1) / 2, 0);
 }
 
+uint16_t tom_abs(uint16_t a,uint16_t b)
+{
+	if(a-b<0)
+		return(b-a);
+	else 		
+		return(a-b);
+}	
 void lcd_draw_picture(uint16_t x1, uint16_t y1, uint16_t width, uint16_t height, uint32_t *ptr)
 {
     lcd_set_area(x1, y1, x1 + width - 1, y1 + height - 1);
     tft_write_word(ptr, width * height / 2, lcd_ctl.mode ? 2 : 0);
+}
+
+void num_String(int x, char *s) // int x:数字数组；char *s：数字字符串数组
+{
+    int v, xx, i, j, n = 0;
+    char c;
+    xx = x; // 求数值x的绝对值
+    while (1)
+    {
+        v = xx % 10;    // 对获取绝对值x的数值xx 求余数
+        s[n] = v + '0'; // 数值转换为字符-存入到数组中
+        n++;            // 位移以此存储多个余数存储
+
+        xx = (xx - v) / 10; // 求整
+        if (xx == 0)
+            break;
+    }
+
+    if (x < 0) // 如果int型中数值为负数
+    {
+        s[n] = '-'; // 将负号标识赋给char型字符串数组s[]
+        n++;        // 位移赋值
+    }
+
+    for (i = 0; i < n / 2; i++)
+    {
+        c = s[i];            //赋值给char c
+        s[i] = s[n - i - 1]; // 一共n个字符
+        s[n - i - 1] = c;
+    }
+    s[n] = '\0'; // 字符串结束标识符
 }
 

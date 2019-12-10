@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <math.h>
 #include "fpioa.h"
 #include "lcd.h"
 #include "board_config.h"
@@ -37,6 +38,12 @@
 
 #define UART_NUM    UART_DEVICE_3
 #define CLASS_NUMBER 20
+int P_NUM=0;
+char C_NUM[20];
+uint16_t chang1=0;
+uint16_t chang2=320;
+uint16_t kuan1=0;
+uint16_t kuan2=240;
 
 extern const unsigned char gImage_image[] __attribute__((aligned(128)));
 static uint16_t lcd_gram[320 * 240] __attribute__((aligned(32)));
@@ -57,7 +64,6 @@ static region_layer_t detect_rl;
 volatile uint32_t g_ai_done_flag;
 volatile uint8_t g_dvp_finish_flag;
 static image_t kpu_image, display_image;
-
 
 static int ai_done(void *ctx)
 {
@@ -284,9 +290,8 @@ static void send_data(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32
 
    char data[4];
    int n;
-   n = sprintf(data, "%d\n", class);
-   uart_send_data(UART_NUM, &data, 4);
-
+   	n = sprintf(data, "%d\n", class);
+	uart_send_data(UART_NUM, &data, 4);
 }
 
 
@@ -442,6 +447,10 @@ int main(void)
         }
 		
 */
+		
+//		lcd_draw_string(115, 2, &C_NUM, GREEN);
+//		lcd_draw_string(5, 2, "num_detectde:", BLUE);
+
 
         /* display pic*/
         lcd_draw_picture(0, 0, 320, 240, (uint32_t *)display_image.addr);
@@ -449,6 +458,7 @@ int main(void)
   		/* draw boxs */
         region_layer_draw_boxes(&detect_rl, drawboxes);
 		region_layer_write_to_uart(&detect_rl, send_data);
+//		printf("the detected num is %d /n",P_NUM);
 		//sleep(0.5);
     }
 }
